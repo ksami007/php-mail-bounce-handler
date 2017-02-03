@@ -82,6 +82,3 @@ You can use the eml files in the `tests/emls` folder for testing.
 
 LGPL. See `LICENSE` for more details.
 
-## More infos
-
-http://www.crazyws.fr/dev/classes-php/classe-de-gestion-des-bounces-en-php-C72TG.html
