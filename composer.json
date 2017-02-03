@@ -1,9 +1,9 @@
 {
-  "name": "galata90/cws-mail-bounce-handler",
+  "name": "galata90/php-mail-bounce-handler",
   "type": "library",
   "description": "PHP class to help webmasters handle bounce-back, feedback loop and ARF mails in standard DSN (Delivery Status Notification, RFC-1894).",
   "keywords": ["php", "mail", "bounce", "dsn", "arf"],
-  "homepage": "https://github.com/galata90/CwsMailBounceHandler",
+  "homepage": "https://github.com/galata90/php-mail-bounce-handler",
   "license": "LGPL",
   "authors": [
     {
@@ -11,7 +11,8 @@
       "homepage": "http://www.crazyws.fr/"
     },
     {
-      "name": "galata90"
+      "name": "galata90",
+      "homepage": "https://github.com/galata90"
     }
   ],
   "minimum-stability": "dev",
