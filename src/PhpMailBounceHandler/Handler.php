@@ -466,11 +466,11 @@ class Handler
         // process maximum number of messages
         if ($this->maxMessages > 0 && $cwsMbhResult->getCounter()->getFetched() > $this->maxMessages) {
             $cwsMbhResult->getCounter()->setFetched($this->maxMessages);
-            $totalMails = array_slice($totalMails, 0, $this->maxMessages);
+            $filteredEmails = array_slice($filteredEmails, 0, $this->maxMessages);
         }
 
         // parsing mails
-        foreach ($totalMails as $key => $val) {
+        foreach ($filteredEmails as $key => $val) {
             $header = @imap_fetchheader($this->mailboxHandler, $val);
             $body = @imap_body($this->mailboxHandler, $val);
             $cwsMbhResult->addMail($this->processMailParsing($val, $header.'\r\n\r\n'.$body));
