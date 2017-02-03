@@ -9,7 +9,7 @@
  *
  * @link https://github.com/crazy-max/CwsMailBounceHandler
  */
-namespace Cws\MailBounceHandler\Models;
+namespace PhpMailBounceHandler\Models;
 
 class Mail
 {
@@ -57,8 +57,6 @@ class Mail
 
     /**
      * List of recipients,.
-     *
-     * @see Cws\MailBounceHandler\Models\Recipient object
      *
      * @var array
      */

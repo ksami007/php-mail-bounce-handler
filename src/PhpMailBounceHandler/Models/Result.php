@@ -9,7 +9,7 @@
  *
  * @link https://github.com/crazy-max/CwsMailBounceHandler
  */
-namespace Cws\MailBounceHandler\Models;
+namespace PhpMailBounceHandler\Models;
 
 class Result
 {
@@ -23,7 +23,7 @@ class Result
     /**
      * List of mails.
      *
-     * @see Cws\MailBounceHandler\Models\Mail
+     * @see PhpMailBounceHandler\Models\Mail
      *
      * @var array
      */

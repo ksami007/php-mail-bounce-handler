@@ -1,8 +1,8 @@
 <?php
 
-namespace Cws\MailBounceHandler\Models;
+namespace PhpMailBounceHandler\Models;
 
-use Cws\MailBounceHandler\Handler;
+use PhpMailBounceHandler\Handler;
 
 /**
  * Recipient.
@@ -37,14 +37,14 @@ class Recipient
     private $email;
 
     /**
-     * Bounce type (see BOUNCE_ const in Cws\MailBounceHandler\Handler).
+     * Bounce type (see BOUNCE_ const in PhpMailBounceHandler\Handler).
      *
      * @var string
      */
     private $bounceType;
 
     /**
-     * Bounce category (see CAT_ const in Cws\MailBounceHandler\Handler).
+     * Bounce category (see CAT_ const in PhpMailBounceHandler\Handler).
      *
      * @var string
      */

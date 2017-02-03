@@ -9,7 +9,7 @@
  *
  * @link https://github.com/crazy-max/CwsMailBounceHandler
  */
-namespace Cws\MailBounceHandler\Models;
+namespace PhpMailBounceHandler\Models;
 
 class Counter
 {

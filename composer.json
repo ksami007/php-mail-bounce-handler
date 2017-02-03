@@ -20,8 +20,8 @@
     "php": ">=5.3.2"
   },
   "autoload": {
-    "psr-0": {
-      "Cws": "lib/"
+    "psr-4": {
+      "PhpMailBounceHandler\\": "src/PhpMailBounceHandler/"
     }
   }
 }

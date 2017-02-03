@@ -9,12 +9,11 @@
  *
  * @link https://github.com/crazy-max/CwsMailBounceHandler
  */
-namespace Cws\MailBounceHandler;
+namespace PhpMailBounceHandler;
 
-use Cws\CwsDebug;
-use Cws\MailBounceHandler\Models\Mail;
-use Cws\MailBounceHandler\Models\Recipient;
-use Cws\MailBounceHandler\Models\Result;
+use PhpMailBounceHandler\Models\Mail;
+use PhpMailBounceHandler\Models\Recipient;
+use PhpMailBounceHandler\Models\Result;
 
 class Handler
 {
@@ -207,33 +206,23 @@ class Handler
      */
     private $error;
 
-    /**
-     * The cws debug instance.
-     *
-     * @var CwsDebug
-     */
-    private $cwsDebug;
-
-    public function __construct(CwsDebug $cwsDebug)
+    public function __construct()
     {
-        $this->cwsDebug = $cwsDebug;
-
-        $this->processMode = self::PROCESS_MODE_NEUTRAL;
-
-        $this->mailboxService = self::MAILBOX_SERVICE_IMAP;
-        $this->mailboxHost = 'localhost';
-        $this->mailboxPort = self::MAILBOX_PORT_IMAP;
+        $this->processMode     = self::PROCESS_MODE_NEUTRAL;
+        $this->mailboxService  = self::MAILBOX_SERVICE_IMAP;
+        $this->mailboxHost     = 'localhost';
+        $this->mailboxPort     = self::MAILBOX_PORT_IMAP;
         $this->mailboxSecurity = self::MAILBOX_SECURITY_NOTLS;
-        $this->mailboxCert = self::MAILBOX_CERT_NOVALIDATE;
-        $this->purge = false;
+        $this->mailboxCert     = self::MAILBOX_CERT_NOVALIDATE;
+        $this->purge           = false;
     }
 
     private function reset()
     {
         $this->mailboxHandler = false;
-        $this->emlFolder = '';
-        $this->emlFiles = array();
-        $this->enableMove = true;
+        $this->emlFolder      = '';
+        $this->emlFiles       = array();
+        $this->enableMove     = true;
     }
 
     /**
@@ -247,7 +236,6 @@ class Handler
     {
         $this->reset();
 
-        $this->cwsDebug->titleH2('Mode openImapLocal', CwsDebug::VERBOSE_SIMPLE);
         $this->openMode = self::OPEN_MODE_MAILBOX;
 
         $this->mailboxHandler = imap_open(
@@ -259,12 +247,10 @@ class Handler
 
         if (!$this->mailboxHandler) {
             $this->error = 'Cannot open the mailbox file to '.$filePath.': '.imap_last_error();
-            $this->cwsDebug->error($this->error);
 
             return false;
         }
 
-        $this->cwsDebug->labelValue('Opened', $filePath, CwsDebug::VERBOSE_SIMPLE);
         return true;
     }
 
@@ -277,13 +263,11 @@ class Handler
     {
         $this->reset();
 
-        $this->cwsDebug->titleH2('Mode openImapRemote', CwsDebug::VERBOSE_SIMPLE);
         $this->openMode = self::OPEN_MODE_MAILBOX;
 
         // disable move operations if server is Gmail... Gmail does not support mailbox creation
         if (stristr($this->mailboxHost, 'gmail') && $this->isMoveProcessMode()) {
             $this->enableMove = false;
-            $this->cwsDebug->simple('<strong>Move operations disabled</strong> for Gmail server, Gmail does not support mailbox creation', CwsDebug::VERBOSE_SIMPLE);
         }
 
         // required options for imap_open connection.
@@ -301,12 +285,9 @@ class Handler
 
         if (!$this->mailboxHandler) {
             $this->error = 'Cannot create '.$this->mailboxService.' connection to '.$this->mailboxHost.': '.imap_last_error();
-            $this->cwsDebug->error($this->error);
 
             return false;
         } else {
-            $this->cwsDebug->labelValue('Connected to', $this->mailboxHost.':'.$this->mailboxPort.$opts.' on mailbox '.$this->mailboxName.' ('.$this->mailboxUsername.')', CwsDebug::VERBOSE_SIMPLE);
-
             return true;
         }
     }
@@ -322,16 +303,13 @@ class Handler
     {
         $this->reset();
 
-        $this->cwsDebug->titleH2('Mode openEmlFolder', CwsDebug::VERBOSE_SIMPLE);
         $this->openMode = self::OPEN_MODE_FILE;
 
         $this->emlFolder = self::formatUnixPath(rtrim(realpath($emlFolder), '/'));
-        $this->cwsDebug->labelValue('Open folder', $this->emlFolder, CwsDebug::VERBOSE_SIMPLE);
 
         $handle = @opendir($this->emlFolder);
         if (!$handle) {
             $this->error = 'Cannot open the eml folder '.$this->emlFolder;
-            $this->cwsDebug->error($this->error);
 
             return false;
         }
@@ -352,12 +330,9 @@ class Handler
 
         if (empty($this->emlFiles)) {
             $this->error = 'No eml file found in '.$this->emlFolder;
-            $this->cwsDebug->error($this->error);
 
             return false;
         } else {
-            $this->cwsDebug->labelValue('Opened', count($this->emlFiles).' / '.$nbFiles.' files.', CwsDebug::VERBOSE_SIMPLE);
-
             return true;
         }
     }
@@ -369,20 +344,17 @@ class Handler
      */
     public function processMails()
     {
-        $this->cwsDebug->titleH2('processMails', CwsDebug::VERBOSE_SIMPLE);
         $cwsMbhResult = new Result();
 
         if ($this->isMailboxOpenMode()) {
             if (!$this->mailboxHandler) {
                 $this->error = 'Mailbox not opened';
-                $this->cwsDebug->error($this->error);
 
                 return false;
             }
         } else {
             if (empty($this->emlFiles)) {
                 $this->error = 'File(s) not opened';
-                $this->cwsDebug->error($this->error);
 
                 return false;
             }
@@ -392,7 +364,6 @@ class Handler
 
         // count mails
         $totalMails = $this->isMailboxOpenMode() ? imap_num_msg($this->mailboxHandler) : count($this->emlFiles);
-        $this->cwsDebug->labelValue('Total', $totalMails.' messages', CwsDebug::VERBOSE_SIMPLE);
 
         // init counter
         $cwsMbhResult->getCounter()->setTotal($totalMails);
@@ -401,29 +372,17 @@ class Handler
         // process maximum number of messages
         if ($this->maxMessages > 0 && $cwsMbhResult->getCounter()->getFetched() > $this->maxMessages) {
             $cwsMbhResult->getCounter()->setFetched($this->maxMessages);
-            $this->cwsDebug->labelValue('Processing', $cwsMbhResult->getCounter()->getFetched().' messages', CwsDebug::VERBOSE_SIMPLE);
-        }
-
-        // check process mode
-        if ($this->isNeutralProcessMode()) {
-            $this->cwsDebug->simple('Running in <strong>neutral mode</strong>, messages will not be processed from mailbox.', CwsDebug::VERBOSE_SIMPLE);
-        } elseif ($this->isMoveProcessMode()) {
-            $this->cwsDebug->simple('Running in <strong>move mode</strong>.', CwsDebug::VERBOSE_SIMPLE);
-        } elseif ($this->isDeleteProcessMode()) {
-            $this->cwsDebug->simple('<strong>Processed messages will be deleted</strong> from mailbox.', CwsDebug::VERBOSE_SIMPLE);
         }
 
         // parsing mails
         if ($this->isMailboxOpenMode()) {
             for ($mailNo = 1; $mailNo <= $cwsMbhResult->getCounter()->getFetched(); $mailNo++) {
-                $this->cwsDebug->titleH3('Msg #'.$mailNo, CwsDebug::VERBOSE_REPORT);
                 $header = @imap_fetchheader($this->mailboxHandler, $mailNo);
                 $body = @imap_body($this->mailboxHandler, $mailNo);
                 $cwsMbhResult->addMail($this->processMailParsing($mailNo, $header.'\r\n\r\n'.$body));
             }
         } else {
             foreach ($this->emlFiles as $file) {
-                $this->cwsDebug->titleH3('Msg #'.$file['name'], CwsDebug::VERBOSE_REPORT);
                 $cwsMbhResult->addMail($this->processMailParsing($file['name'], $file['content']));
             }
         }
@@ -449,14 +408,9 @@ class Handler
             }
         }
 
-        $this->cwsDebug->titleH2('Ending processMails', CwsDebug::VERBOSE_SIMPLE);
         if ($this->isMailboxOpenMode()) {
-            $this->cwsDebug->simple('Closing mailbox, and purging messages', CwsDebug::VERBOSE_SIMPLE);
             @imap_close($this->mailboxHandler);
         }
-
-        $this->cwsDebug->dump('Counter result', $cwsMbhResult->getCounter(), CwsDebug::VERBOSE_SIMPLE);
-        $this->cwsDebug->dump('Full result', $cwsMbhResult, CwsDebug::VERBOSE_REPORT);
 
         return $cwsMbhResult;
     }
@@ -506,11 +460,9 @@ class Handler
         // begin process
         $tmpRecipients = array();
         if ($isFbl) {
-            $this->cwsDebug->simple('<strong>Feedback loop</strong> detected', CwsDebug::VERBOSE_DEBUG);
             $cwsMbhMail->setSubject(trim(str_ireplace('Fw:', '', $header['Subject'])));
 
             if (self::isHotmailFbl($bodySections)) {
-                $this->cwsDebug->simple('This message is an <strong>Hotmail fbl</strong>', CwsDebug::VERBOSE_DEBUG);
                 $bodySections['arMachine']['Content-disposition'] = 'inline';
                 $bodySections['arMachine']['Content-type'] = 'message/feedback-report';
                 $bodySections['arMachine']['Feedback-type'] = 'abuse';
@@ -560,12 +512,10 @@ class Handler
             $cwsMbhRecipient->setEmail($bodySections['arMachine']['Original-rcpt-to']);
             $tmpRecipients[] = $cwsMbhRecipient;
         } elseif (!self::isEmpty($header, 'Subject') && preg_match('#auto.{0,20}reply|vacation|(out|away|on holiday).*office#i', $header['Subject'])) {
-            $this->cwsDebug->simple('<strong>Autoreply</strong> engaged', CwsDebug::VERBOSE_DEBUG);
             $cwsMbhRecipient = new Recipient();
             $cwsMbhRecipient->setBounceCat(self::CAT_AUTOREPLY);
             $tmpRecipients[] = $cwsMbhRecipient;
         } elseif (self::isRfc1892Report($header)) {
-            $this->cwsDebug->simple('<strong>RFC 1892 report</strong> engaged', CwsDebug::VERBOSE_DEBUG);
             $arBodyMachine = $this->parseBodySectionMachine($bodySections['machine']);
             if (!self::isEmpty($arBodyMachine['perRecipient'])) {
                 foreach ($arBodyMachine['perRecipient'] as $arRecipient) {
@@ -577,7 +527,6 @@ class Handler
                 }
             }
         } elseif (!self::isEmpty($header, 'X-failed-recipients')) {
-            $this->cwsDebug->simple('<strong>X-failed-recipients</strong> engaged', CwsDebug::VERBOSE_DEBUG);
             $arEmails = explode(',', $header['X-failed-recipients']);
             foreach ($arEmails as $email) {
                 $cwsMbhRecipient = new Recipient();
@@ -585,7 +534,6 @@ class Handler
                 $tmpRecipients[] = $cwsMbhRecipient;
             }
         } elseif (isset($header['Content-type']) && !self::isEmpty($header['Content-type'], 'boundary') && self::isBounce($header)) {
-            $this->cwsDebug->simple('<strong>First body part</strong> engaged', CwsDebug::VERBOSE_DEBUG);
             $arEmails = self::findEmails($bodySections['first']);
             foreach ($arEmails as $email) {
                 $cwsMbhRecipient = new Recipient();
@@ -593,7 +541,6 @@ class Handler
                 $tmpRecipients[] = $cwsMbhRecipient;
             }
         } elseif (self::isBounce($header)) {
-            $this->cwsDebug->simple('<strong>Other bounces</strong> engaged', CwsDebug::VERBOSE_DEBUG);
             $arEmails = self::findEmails($body);
             foreach ($arEmails as $email) {
                 $cwsMbhRecipient = new Recipient();
@@ -638,8 +585,6 @@ class Handler
             }
         }
 
-        $this->cwsDebug->dump('Result', $cwsMbhMail, CwsDebug::VERBOSE_REPORT);
-
         return $cwsMbhMail;
     }
 
@@ -653,12 +598,8 @@ class Handler
     private function processMailDelete(Mail $cwsMbhMail)
     {
         if ($this->isMailboxOpenMode()) {
-            $this->cwsDebug->simple('Process <strong>delete '.$cwsMbhMail->getType().' bounce</strong> message '.$cwsMbhMail->getToken().' in mailbox', CwsDebug::VERBOSE_DEBUG);
-
             return @imap_delete($this->mailboxHandler, $cwsMbhMail->getToken());
         } elseif ($this->isFileOpenMode()) {
-            $this->cwsDebug->simple('Process <strong>delete '.$cwsMbhMail->getType().' bounce</strong> message '.$cwsMbhMail->getToken().' in folder '.$this->emlFolder, CwsDebug::VERBOSE_DEBUG);
-
             return @unlink($this->emlFolder.'/'.$cwsMbhMail->getToken());
         }
 
@@ -676,7 +617,6 @@ class Handler
     {
         if ($this->isMailboxOpenMode()) {
             $moveFolder = $this->getMailboxName().'.'.self::SUFFIX_BOUNCES_MOVE;
-            $this->cwsDebug->simple('Process <strong>move '.$cwsMbhMail->getType().'</strong> in '.$moveFolder.' mailbox', CwsDebug::VERBOSE_DEBUG);
             if ($this->isImapMailboxExists($moveFolder)) {
                 return imap_mail_move($this->mailboxHandler, $cwsMbhMail->getToken(), $moveFolder);
             }
@@ -685,7 +625,6 @@ class Handler
             if (!is_dir($moveFolder)) {
                 mkdir($moveFolder);
             }
-            $this->cwsDebug->simple('Process <strong>move '.$cwsMbhMail->getType().'</strong> in '.$moveFolder.' folder', CwsDebug::VERBOSE_DEBUG);
 
             return rename($this->emlFolder.'/'.$cwsMbhMail->getToken(), $moveFolder.'/'.$cwsMbhMail->getToken());
         }
@@ -776,10 +715,6 @@ class Handler
                 break;
         }
 
-        if (!empty($result)) {
-            $this->cwsDebug->simple('Action type <strong>'.$result.'</strong> found via status code', CwsDebug::VERBOSE_DEBUG);
-        }
-
         return $result;
     }
 
@@ -800,8 +735,6 @@ class Handler
             // From string
             $statusCode = self::getStatusCodeFromPattern($bodyLine);
             if (!empty($statusCode)) {
-                $this->cwsDebug->simple('Status code <strong>'.$statusCode.'</strong> found via code resolver pattern', CwsDebug::VERBOSE_DEBUG);
-
                 return $statusCode;
             }
 
@@ -812,7 +745,6 @@ class Handler
                 }
                 $statusCode = $matches[1];
                 $statusCode = self::formatStatusCode($statusCode);
-                $this->cwsDebug->simple('Status code <strong>'.$statusCode.'</strong> found via RFC 1893.', CwsDebug::VERBOSE_DEBUG);
 
                 return $statusCode;
             }
@@ -829,7 +761,6 @@ class Handler
                     $statusCode = '432';
                 }
                 $statusCode = self::formatStatusCode($statusCode);
-                $this->cwsDebug->simple('Status code <strong>'.$statusCode.'</strong> found and converted via RFC 821.', CwsDebug::VERBOSE_DEBUG);
 
                 return $statusCode;
             }
