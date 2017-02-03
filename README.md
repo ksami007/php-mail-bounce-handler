@@ -1,7 +1,7 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/galata90/php-mail-bounce-handler.svg?style=flat-square)](https://packagist.org/packages/galata90/php-mail-bounce-handler)
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.3.2-8892BF.svg?style=flat-square)](https://php.net/)
 
-# CwsMailBounceHandler
+# php-mail-bounce-handler
 
 PHP class to help webmasters handle bounce-back, feedback loop and ARF mails in standard DSN (Delivery Status Notification, RFC-1894).
 It checks your IMAP inbox or eml files and delete or move all bounced emails.
