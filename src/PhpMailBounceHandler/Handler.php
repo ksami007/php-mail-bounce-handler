@@ -78,6 +78,9 @@ class Handler
     const STATUS_SECOND_SUBCODE = 'second_subcode';
     const STATUS_THIRD_SUBCODE = 'third_subcode';
 
+    const SEARCH_ALL = 'ALL';
+    const SEARCH_UNSEEN = 'UNSEEN';
+
     /**
      * Control the method to open e-mail(s).
      *
@@ -206,6 +209,14 @@ class Handler
      */
     private $error;
 
+    /**
+     * Search criteria.
+     * default SEARCH_ALL.
+     *
+     * @var string
+     */
+    private $searchCriteria;
+
     public function __construct()
     {
         $this->processMode     = self::PROCESS_MODE_NEUTRAL;
@@ -215,6 +226,7 @@ class Handler
         $this->mailboxSecurity = self::MAILBOX_SECURITY_NOTLS;
         $this->mailboxCert     = self::MAILBOX_CERT_NOVALIDATE;
         $this->purge           = false;
+        $this->searchCriteria  = self::SEARCH_ALL;
     }
 
     private function reset()
@@ -344,8 +356,6 @@ class Handler
      */
     public function processMails()
     {
-        $cwsMbhResult = new Result();
-
         if ($this->isMailboxOpenMode()) {
             if (!$this->mailboxHandler) {
                 $this->error = 'Mailbox not opened';
@@ -359,6 +369,48 @@ class Handler
                 return false;
             }
         }
+
+        $searchCriteria = $this->getSearchCriteria();
+        $cwsMbhResult = $this->isMailboxOpenMode() && ($searchCriteria != self::SEARCH_ALL)
+            ? $this->getEmailsByCriteria($searchCriteria)
+            : $this->getAllEmails();
+
+        // process mails
+        foreach ($cwsMbhResult->getMails() as $cwsMbhMail) {
+            /* @var $cwsMbhMail Mail */
+            if ($cwsMbhMail->isProcessed()) {
+                $cwsMbhResult->getCounter()->incrProcessed();
+                if ($this->enableMove && $this->isMoveProcessMode()) {
+                    $this->processMailMove($cwsMbhMail);
+                    $cwsMbhResult->getCounter()->incrMoved();
+                } elseif ($this->isDeleteProcessMode()) {
+                    $this->processMailDelete($cwsMbhMail);
+                    $cwsMbhResult->getCounter()->incrDeleted();
+                }
+            } else {
+                $cwsMbhResult->getCounter()->incrUnprocessed();
+                if ($this->purge && $this->isDeleteProcessMode()) {
+                    $this->processMailDelete($cwsMbhMail);
+                    $cwsMbhResult->getCounter()->incrDeleted();
+                }
+            }
+        }
+
+        if ($this->isMailboxOpenMode()) {
+            @imap_close($this->mailboxHandler);
+        }
+
+        return $cwsMbhResult;
+    }
+
+    /**
+     * Get all emails
+     *
+     * @return \PhpMailBounceHandler\Models\Result
+     */
+    private function getAllEmails()
+    {
+        $cwsMbhResult = new Result();
 
         $this->enableMove = $this->enableMove && $this->isMoveProcessMode();
 
@@ -387,29 +439,41 @@ class Handler
             }
         }
 
-        // process mails
-        foreach ($cwsMbhResult->getMails() as $cwsMbhMail) {
-            /* @var $cwsMbhMail Mail */
-            if ($cwsMbhMail->isProcessed()) {
-                $cwsMbhResult->getCounter()->incrProcessed();
-                if ($this->enableMove && $this->isMoveProcessMode()) {
-                    $this->processMailMove($cwsMbhMail);
-                    $cwsMbhResult->getCounter()->incrMoved();
-                } elseif ($this->isDeleteProcessMode()) {
-                    $this->processMailDelete($cwsMbhMail);
-                    $cwsMbhResult->getCounter()->incrDeleted();
-                }
-            } else {
-                $cwsMbhResult->getCounter()->incrUnprocessed();
-                if ($this->purge && $this->isDeleteProcessMode()) {
-                    $this->processMailDelete($cwsMbhMail);
-                    $cwsMbhResult->getCounter()->incrDeleted();
-                }
-            }
+        return $cwsMbhResult;
+    }
+
+    /**
+     * Get emails by criteria
+     *
+     * @param string $criteria
+     * @return \PhpMailBounceHandler\Models\Result
+     */
+    private function getEmailsByCriteria($criteria)
+    {
+        $cwsMbhResult = new Result();
+
+        $this->enableMove = $this->enableMove && $this->isMoveProcessMode();
+
+        $filteredEmails = imap_search($this->mailboxHandler, $criteria);
+
+        // count mails
+        $totalMails = count($filteredEmails);
+
+        // init counter
+        $cwsMbhResult->getCounter()->setTotal($totalMails);
+        $cwsMbhResult->getCounter()->setFetched($totalMails);
+
+        // process maximum number of messages
+        if ($this->maxMessages > 0 && $cwsMbhResult->getCounter()->getFetched() > $this->maxMessages) {
+            $cwsMbhResult->getCounter()->setFetched($this->maxMessages);
+            $totalMails = array_slice($totalMails, 0, $this->maxMessages);
         }
 
-        if ($this->isMailboxOpenMode()) {
-            @imap_close($this->mailboxHandler);
+        // parsing mails
+        foreach ($totalMails as $key => $val) {
+            $header = @imap_fetchheader($this->mailboxHandler, $val);
+            $body = @imap_body($this->mailboxHandler, $val);
+            $cwsMbhResult->addMail($this->processMailParsing($val, $header.'\r\n\r\n'.$body));
         }
 
         return $cwsMbhResult;
@@ -971,13 +1035,13 @@ class Handler
             $pregSubject .= 'mail transaction failed)|auto.{0,20}reply|vacation|(out|away|on holiday';
 
             if (isset($arHeader['Subject'])
-                    && preg_match('#('.$pregSubject.').*office#i', $arHeader['Subject'])) {
+                && preg_match('#('.$pregSubject.').*office#i', $arHeader['Subject'])) {
                 return true;
             } elseif (isset($arHeader['Precedence'])
-                    && preg_match('#auto_reply#', $arHeader['Precedence'])) {
+                && preg_match('#auto_reply#', $arHeader['Precedence'])) {
                 return true;
             } elseif (isset($arHeader['From'])
-                    && preg_match('#auto_reply#', $arHeader['From'])) {
+                && preg_match('#auto_reply#', $arHeader['From'])) {
                 return true;
             }
         }
@@ -997,11 +1061,11 @@ class Handler
     {
         if (!empty($arHeader)) {
             if (isset($arHeader['Content-type'])
-                    && isset($arHeader['Content-type']['report-type'])
-                    && preg_match('#feedback-report#', $arHeader['Content-type']['report-type'])) {
+                && isset($arHeader['Content-type']['report-type'])
+                && preg_match('#feedback-report#', $arHeader['Content-type']['report-type'])) {
                 return true;
             } elseif (isset($arHeader['X-loop'])
-                    && preg_match('#scomp#', $arHeader['X-loop'])) {
+                && preg_match('#scomp#', $arHeader['X-loop'])) {
                 return true;
             } elseif (self::isHotmailFbl($bodySections)) {
                 return true;
@@ -2546,5 +2610,25 @@ class Handler
     public function getError()
     {
         return $this->error;
+    }
+
+    /**
+     * Get search criteria.
+     *
+     * @return string $searchCriteria
+     */
+    public function getSearchCriteria()
+    {
+        return $this->searchCriteria;
+    }
+
+    /**
+     * Set search criteria.
+     *
+     * @param string $criteria
+     */
+    public function setSearchCriteria($criteria)
+    {
+        $this->searchCriteria = $criteria;
     }
 }
