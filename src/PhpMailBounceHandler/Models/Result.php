@@ -53,6 +53,20 @@ class Result
         return $this->mails;
     }
 
+    public function getFblMails()
+    {
+        $fblMails = [];
+        $mails = $this->getMails();
+
+        foreach ($mails as $mail) {
+            if ($mail->getType() == 'fbl') {
+                $fblMails[] = $mail;
+            }
+        }
+
+        return $fblMails;
+    }
+
     public function addMail(Mail $mail)
     {
         $this->mails[] = $mail;
