@@ -2203,7 +2203,7 @@ class Handler
 
         $content = str_replace("\r\n", "\n", $content);
         $content = str_replace("\n", "\r\n", $content);
-        $content = str_replace("=\r\n", '', $content);
+        //$content = str_replace("=\r\n", '', $content);
         $content = str_replace('=3D', '=', $content);
         $content = str_replace('=09', '  ', $content);
 
