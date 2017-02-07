@@ -526,48 +526,32 @@ class Handler
         if ($isFbl) {
             $cwsMbhMail->setSubject(trim(str_ireplace('Fw:', '', $header['Subject'])));
 
-            if (self::isHotmailFbl($bodySections)) {
-                $bodySections['arMachine']['Content-disposition'] = 'inline';
-                $bodySections['arMachine']['Content-type'] = 'message/feedback-report';
-                $bodySections['arMachine']['Feedback-type'] = 'abuse';
-                $bodySections['arMachine']['User-agent'] = 'Hotmail FBL';
-                if (!self::isEmpty($bodySections['arFirst'], 'Date')) {
-                    $bodySections['arMachine']['Received-date'] = $bodySections['arFirst']['Date'];
-                }
-                if (!self::isEmpty($bodySections['arFirst'], 'X-HmXmrOriginalRecipient')) {
-                    $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arFirst']['X-HmXmrOriginalRecipient'];
-                }
-                if (!self::isEmpty($bodySections['arFirst'], 'X-sid-pra')) {
-                    $bodySections['arMachine']['Original-mail-from'] = $bodySections['arFirst']['X-sid-pra'];
-                }
-            } else {
-                if (!self::isEmpty($bodySections, 'machine')) {
-                    $bodySections['arMachine'] = self::parseLines($bodySections['machine']);
-                }
-                if (!self::isEmpty($bodySections, 'returned')) {
-                    $bodySections['arReturned'] = self::parseLines($bodySections['returned']);
-                }
-                if (self::isEmpty($bodySections['arMachine'], 'Original-mail-from') && !self::isEmpty($bodySections['arReturned'], 'From')) {
-                    $bodySections['arMachine']['Original-mail-from'] = $bodySections['arReturned']['From'];
-                }
-                if (self::isEmpty($bodySections['arMachine'], 'Original-rcpt-to') && !self::isEmpty($bodySections['arMachine'], 'Removal-recipient')) {
-                    $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arMachine']['Removal-recipient'];
-                } elseif (!self::isEmpty($bodySections['arReturned'], 'To')) {
-                    $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arReturned']['To'];
-                }
-                // try to get the actual intended recipient if possible
-                if (preg_match('#Undisclosed|redacted#i', $bodySections['arMachine']['Original-mail-from']) && !self::isEmpty($bodySections['arMachine'], 'Removal-recipient')) {
-                    $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arMachine']['Removal-recipient'];
-                }
-                if (self::isEmpty($bodySections['arMachine'], 'Received-date') && !self::isEmpty($bodySections['arMachine'], 'Arrival-date')) {
-                    $bodySections['arMachine']['Received-date'] = $bodySections['arMachine']['Arrival-date'];
-                }
-                if (!self::isEmpty($bodySections['arMachine'], 'Original-mail-from')) {
-                    $bodySections['arMachine']['Original-mail-from'] = self::extractEmail($bodySections['arMachine']['Original-mail-from']);
-                }
-                if (!self::isEmpty($bodySections['arMachine'], 'Original-rcpt-to')) {
-                    $bodySections['arMachine']['Original-rcpt-to'] = self::extractEmail($bodySections['arMachine']['Original-rcpt-to']);
-                }
+            if (!self::isEmpty($bodySections, 'machine')) {
+                $bodySections['arMachine'] = self::parseLines($bodySections['machine']);
+            }
+            if (!self::isEmpty($bodySections, 'returned')) {
+                $bodySections['arReturned'] = self::parseLines($bodySections['returned']);
+            }
+            if (self::isEmpty($bodySections['arMachine'], 'Original-mail-from') && !self::isEmpty($bodySections['arReturned'], 'From')) {
+                $bodySections['arMachine']['Original-mail-from'] = $bodySections['arReturned']['From'];
+            }
+            if (self::isEmpty($bodySections['arMachine'], 'Original-rcpt-to') && !self::isEmpty($bodySections['arMachine'], 'Removal-recipient')) {
+                $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arMachine']['Removal-recipient'];
+            } elseif (!self::isEmpty($bodySections['arReturned'], 'To')) {
+                $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arReturned']['To'];
+            }
+            // try to get the actual intended recipient if possible
+            if (preg_match('#Undisclosed|redacted#i', $bodySections['arMachine']['Original-mail-from']) && !self::isEmpty($bodySections['arMachine'], 'Removal-recipient')) {
+                $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arMachine']['Removal-recipient'];
+            }
+            if (self::isEmpty($bodySections['arMachine'], 'Received-date') && !self::isEmpty($bodySections['arMachine'], 'Arrival-date')) {
+                $bodySections['arMachine']['Received-date'] = $bodySections['arMachine']['Arrival-date'];
+            }
+            if (!self::isEmpty($bodySections['arMachine'], 'Original-mail-from')) {
+                $bodySections['arMachine']['Original-mail-from'] = self::extractEmail($bodySections['arMachine']['Original-mail-from']);
+            }
+            if (!self::isEmpty($bodySections['arMachine'], 'Original-rcpt-to')) {
+                $bodySections['arMachine']['Original-rcpt-to'] = self::extractEmail($bodySections['arMachine']['Original-rcpt-to']);
             }
 
             $cwsMbhRecipient = new Recipient();
@@ -1073,20 +1057,6 @@ class Handler
         }
 
         return false;
-    }
-
-    /**
-     * Function to check if a message is a hotmail feedback loop via body informations.
-     *
-     * @param array $bodySections : the array body sections
-     *
-     * @return bool
-     */
-    private static function isHotmailFbl($bodySections)
-    {
-        return !empty($bodySections)
-            && isset($bodySections['arFirst'])
-            && isset($bodySections['arFirst']['X-HmXmrOriginalRecipient']);
     }
 
     /**
@@ -1921,7 +1891,6 @@ class Handler
             'not allowed access from your location'                     => '5.7.1',
             'permanently deferred'                                      => '5.7.1',
             'rejected by policy'                                        => '5.7.1',
-            'rejected by windows live hotmail for policy reasons'       => '5.7.1',
             'rejected for policy reasons'                               => '5.7.1',
             'rejecting banned content'                                  => '5.7.1',
             'sorry, looks like spam'                                    => '5.7.1',
