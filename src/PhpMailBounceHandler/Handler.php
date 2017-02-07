@@ -1037,11 +1037,10 @@ class Handler
      * Function to check if a message is a feedback loop via headers and body informations.
      *
      * @param array $arHeader     : the array headers
-     * @param array $bodySections : the array body sections
      *
      * @return bool
      */
-    private static function isFbl($arHeader, $bodySections = array())
+    private static function isFbl($arHeader)
     {
         if (!empty($arHeader)) {
             if (isset($arHeader['Content-type'])
@@ -1050,8 +1049,6 @@ class Handler
                 return true;
             } elseif (isset($arHeader['X-loop'])
                 && preg_match('#scomp#', $arHeader['X-loop'])) {
-                return true;
-            } elseif (self::isHotmailFbl($bodySections)) {
                 return true;
             }
         }
