@@ -35,13 +35,6 @@ class Counter
     private $processed;
 
     /**
-     * Messages unprocessed.
-     *
-     * @var int
-     */
-    private $unprocessed;
-
-    /**
      * Messages unprocessed deleted.
      *
      * @var int
@@ -60,7 +53,6 @@ class Counter
         $this->total = 0;
         $this->fetched = 0;
         $this->processed = 0;
-        $this->unprocessed = 0;
         $this->deleted = 0;
         $this->moved = 0;
     }
@@ -98,21 +90,6 @@ class Counter
     public function setProcessed($processed)
     {
         $this->processed = $processed;
-    }
-
-    public function getUnprocessed()
-    {
-        return $this->unprocessed;
-    }
-
-    public function incrUnprocessed()
-    {
-        $this->unprocessed++;
-    }
-
-    public function setUnprocessed($unprocessed)
-    {
-        $this->unprocessed = $unprocessed;
     }
 
     public function getDeleted()

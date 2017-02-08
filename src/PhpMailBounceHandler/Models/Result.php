@@ -25,7 +25,7 @@ class Result
     /**
      * List of mails.
      *
-     * @see PhpMailBounceHandler\Models\Mail
+     * @see \PhpMailBounceHandler\Models\Mail
      *
      * @var array
      */

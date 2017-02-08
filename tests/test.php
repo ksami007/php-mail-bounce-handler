@@ -36,7 +36,7 @@ $cwsMbh->setMailboxUsername('myusername');
 $cwsMbh->setMailboxPassword('mypassword');
 $cwsMbh->setMailboxSecurity($cwsMbh::MAILBOX_SECURITY_SSL); // default const MAILBOX_SECURITY_NOTLS
 $cwsMbh->setMailboxCertValidate(); // default const MAILBOX_CERT_NOVALIDATE
-$cwsMbh->setMailboxName('SPAM'); // default 'INBOX'
+//$cwsMbh->setMailboxName('SPAM'); // default 'INBOX'
 if ($cwsMbh->openImapRemote() === false) {
     $error = $cwsMbh->getError();
     return;
@@ -53,7 +53,6 @@ if (!$result instanceof PhpMailBounceHandler\Models\Result) {
     echo 'total : '.$counter->getTotal().'<br />';
     echo 'fetched : '.$counter->getFetched().'<br />';
     echo 'processed : '.$counter->getProcessed().'<br />';
-    echo 'unprocessed : '.$counter->getUnprocessed().'<br />';
     echo 'deleted : '.$counter->getDeleted().'<br />';
     echo 'moved : '.$counter->getMoved().'<br />';
 
@@ -65,7 +64,6 @@ if (!$result instanceof PhpMailBounceHandler\Models\Result) {
         }
         echo '<h3>'.$mail->getToken().'</h3>';
         echo 'subject : '.$mail->getSubject().'<br />';
-        echo 'type : '.$mail->getType().'<br />';
         echo 'recipients :<br />';
         foreach ($mail->getRecipients() as $recipient) {
             if (!$recipient instanceof PhpMailBounceHandler\Models\Recipient) {

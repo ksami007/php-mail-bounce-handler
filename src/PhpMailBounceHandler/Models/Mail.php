@@ -21,13 +21,6 @@ class Mail
     private $token;
 
     /**
-     * Was processed during bounce or fbl analyze.
-     *
-     * @var bool
-     */
-    private $processed;
-
-    /**
      * Message subject.
      *
      * @var string
@@ -49,13 +42,6 @@ class Mail
     private $body;
 
     /**
-     * Type detected (bounce or fbl).
-     *
-     * @var string
-     */
-    private $type;
-
-    /**
      * List of recipients,.
      *
      * @var array
@@ -65,9 +51,7 @@ class Mail
     public function __construct()
     {
         $this->token = null;
-        $this->processed = true;
         $this->subject = null;
-        $this->type = null;
         $this->recipients = array();
     }
 
@@ -79,16 +63,6 @@ class Mail
     public function setToken($token)
     {
         $this->token = $token;
-    }
-
-    public function isProcessed()
-    {
-        return $this->processed;
-    }
-
-    public function setProcessed($processed)
-    {
-        $this->processed = $processed;
     }
 
     public function getSubject()
@@ -119,16 +93,6 @@ class Mail
     public function setBody($body)
     {
         $this->body = $body;
-    }
-
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    public function setType($type)
-    {
-        $this->type = $type;
     }
 
     public function getRecipients()
