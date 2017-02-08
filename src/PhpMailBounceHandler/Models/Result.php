@@ -11,8 +11,6 @@
  */
 namespace PhpMailBounceHandler\Models;
 
-use PhpMailBounceHandler\Handler;
-
 class Result
 {
     /**
@@ -53,20 +51,6 @@ class Result
     public function getMails()
     {
         return $this->mails;
-    }
-
-    public function getFblMails()
-    {
-        $fblMails = [];
-        $mails = $this->getMails();
-
-        foreach ($mails as $mail) {
-            if ($mail->getType() == Handler::TYPE_FBL) {
-                $fblMails[] = $mail;
-            }
-        }
-
-        return $fblMails;
     }
 
     public function addMail(Mail $mail)
