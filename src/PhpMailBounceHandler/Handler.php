@@ -529,8 +529,10 @@ class Handler
             }
 
             // try to get the actual intended recipient if possible
-            if (preg_match('#Undisclosed|redacted#i', $bodySections['arMachine']['Original-mail-from']) && !self::isEmpty($bodySections['arMachine'], 'Removal-recipient')) {
-                $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arMachine']['Removal-recipient'];
+            if (!empty($bodySections['arMachine']['Original-mail-from'])) {
+                if (preg_match('#Undisclosed|redacted#i', $bodySections['arMachine']['Original-mail-from']) && !self::isEmpty($bodySections['arMachine'], 'Removal-recipient')) {
+                    $bodySections['arMachine']['Original-rcpt-to'] = $bodySections['arMachine']['Removal-recipient'];
+                }
             }
 
             if (self::isEmpty($bodySections['arMachine'], 'Received-date') && !self::isEmpty($bodySections['arMachine'], 'Arrival-date')) {
