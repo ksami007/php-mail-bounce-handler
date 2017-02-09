@@ -47,7 +47,10 @@ class Handler
     const SEARCH_ALL = 'ALL';
     const SEARCH_UNSEEN = 'UNSEEN';
 
-    private $tmpProcessed = 0;
+    /**
+     * @var bool
+     */
+    private $showProgress = false;
 
     /**
      * Control the method to open e-mail(s).
@@ -388,12 +391,19 @@ class Handler
 
         // parsing mails
         if ($this->isMailboxOpenMode()) {
-            for ($mailNo = 1; $mailNo <= $cwsMbhResult->getCounter()->getFetched(); $mailNo++) {
+
+            $fetched = $cwsMbhResult->getCounter()->getFetched();
+
+            for ($mailNo = 1; $mailNo <= $fetched; $mailNo++) {
                 $header = @imap_fetchheader($this->mailboxHandler, $mailNo);
                 $body = @imap_body($this->mailboxHandler, $mailNo);
                 $processedMail = $this->processMailParsing($mailNo, $header.'\r\n\r\n'.$body);
                 if (!is_null($processedMail)) {
                     $cwsMbhResult->addMail($processedMail);
+                }
+
+                if ($this->getShowProgress()) {
+                    $this->showProcessMailProgress($fetched, $mailNo);
                 }
             }
         } else {
@@ -436,6 +446,8 @@ class Handler
             $filteredEmails = array_slice($filteredEmails, 0, $this->maxMessages);
         }
 
+        $fetched = $cwsMbhResult->getCounter()->getFetched();
+
         // parsing mails
         foreach ($filteredEmails as $key => $val) {
             $header = @imap_fetchheader($this->mailboxHandler, $val);
@@ -443,6 +455,10 @@ class Handler
             $processedMail = $this->processMailParsing($val, $header.'\r\n\r\n'.$body);
             if (!is_null($processedMail)) {
                 $cwsMbhResult->addMail($processedMail);
+            }
+
+            if ($this->getShowProgress()) {
+                $this->showProcessMailProgress($fetched, $key);
             }
         }
 
@@ -849,6 +865,16 @@ class Handler
         }
     }
 
+    private function showProcessMailProgress($total, $current)
+    {
+        $percents = ($current * 100) / $total;
+        $percents = number_format($percents, 1);
+        echo "Processed:        ";
+        echo "\033[7D";
+        echo str_pad($percents, 4, ' ', STR_PAD_LEFT) . " %";
+        sleep(1);
+    }
+
     /**
      * Check if open mode is mailbox.
      *
@@ -1227,5 +1253,24 @@ class Handler
     public function setSearchCriteria($criteria)
     {
         $this->searchCriteria = $criteria;
+    }
+
+    /**
+     * Show process mail progress
+     *
+     * @param bool $show
+     */
+    public function setShowProgress($show) {
+        $this->showProgress = $show;
+    }
+
+    /**
+     * Can show process mail progress
+     *
+     * @return bool
+     */
+    public function getShowProgress()
+    {
+        return $this->showProgress;
     }
 }
