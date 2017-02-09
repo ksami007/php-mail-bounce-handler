@@ -869,10 +869,7 @@ class Handler
     {
         $percents = ($current * 100) / $total;
         $percents = number_format($percents, 1);
-        echo "Processed:        ";
-        echo "\033[7D";
-        echo str_pad($percents, 4, ' ', STR_PAD_LEFT) . " %";
-        sleep(1);
+        echo "Processed: {$percents}% [{$current} of {$total}] \r";
     }
 
     /**
