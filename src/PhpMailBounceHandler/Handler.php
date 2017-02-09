@@ -458,7 +458,8 @@ class Handler
             }
 
             if ($this->getShowProgress()) {
-                $this->showProcessMailProgress($fetched, $key);
+                $curr = $key + 1;
+                $this->showProcessMailProgress($fetched, $curr);
             }
         }
 
