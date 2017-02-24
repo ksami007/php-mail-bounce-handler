@@ -448,6 +448,10 @@ class Handler
 
         $fetched = $cwsMbhResult->getCounter()->getFetched();
 
+        if ($filteredEmails === false) {
+            return $cwsMbhResult;
+        }
+
         // parsing mails
         foreach ($filteredEmails as $key => $val) {
             $header = @imap_fetchheader($this->mailboxHandler, $val);
