@@ -2,8 +2,6 @@
 
 namespace PhpMailBounceHandler\Models;
 
-use PhpMailBounceHandler\Handler;
-
 /**
  * Recipient.
  *

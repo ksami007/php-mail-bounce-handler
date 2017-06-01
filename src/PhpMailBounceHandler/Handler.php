@@ -685,8 +685,7 @@ class Handler
 
         if (isset($arHeader['Content-type'])) {
             $ar_mr = explode(';', $arHeader['Content-type']);
-            $arHeader['Content-type'] = '';
-            $arHeader['Content-type']['type'] = strtolower($ar_mr[0]);
+            $arHeader['Content-type'] = ['type' => strtolower($ar_mr[0])];
             foreach ($ar_mr as $mr) {
                 if (preg_match('#([^=.]*?)=(.*)#i', $mr, $matches)) {
                     $arHeader['Content-type'][strtolower(trim($matches[1]))] = str_replace('"', '', $matches[2]);
