@@ -1,4 +1,4 @@
-[![Latest Stable Version](https://img.shields.io/packagist/v/galata90/php-mail-bounce-handler.svg?style=flat-square)](https://packagist.org/packages/galata90/php-mail-bounce-handler)
+[![Latest Stable Version](https://img.shields.io/packagist/v/ksami007/php-mail-bounce-handler.svg?style=flat-square)](https://packagist.org/packages/ksami007/php-mail-bounce-handler)
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.3.2-8892BF.svg?style=flat-square)](https://php.net/)
 [![Tested on PHP 5.4 to 7.4](https://img.shields.io/badge/tested%20on-PHP%205.4%20|%205.5%20|%205.6%20|%207.0%20|%207.1%20|%207.2%20|%207.3%20|%207.4%20-brightgreen.svg?maxAge=2419200)](https://php.net/)
 # php-mail-bounce-handler
