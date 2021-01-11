@@ -15,7 +15,7 @@ If a bounce is malformed, it tries to extract some useful information to parse s
 ## Installation with Composer
 
 ```bash
-composer require galata90/php-mail-bounce-handler
+composer require ksami007/php-mail-bounce-handler
 ```
 
 And download the code:
